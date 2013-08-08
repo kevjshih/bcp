@@ -1,0 +1,1 @@
+mex -O -Iinclude -I../boost_1_48_0 -L. -L/usr/lib/gcc/i686-apple-darwin10/4.2.1/x86-64 -lgomp -lposelet poselets_mex/main.cpp -output poselets_mex
