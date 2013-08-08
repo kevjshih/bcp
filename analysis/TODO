@@ -1,0 +1,18 @@
+Spatial parameters
+   - Not sure... probably need a model with multiple parts 
+   - Try on airplanes
+
+Does exemplar AP predict full training AP (exemplar_to_full_AP.m)
+   - Try on fixed subset first and full training
+
+Does selecting a subset help?
+   - Need a definition of ``help'': 
+      1) Per part: Recall at 90% precision
+      2) Overall: max AP, number of parts to reach k AP
+   - Search over C, subset size (% for subset svm, Prec thresh for mine)
+
+Sub-cell shifts, orientation, L/R flip
+   - For each example, take max over:
+      1) Left/right flip (2)
+      2) Rotation of image ({-20, -10, 0, 10, 20}) (5)
+      3) 1/2 cell shift (should this go into inference loop for each level of the pyramid?) (2*2)

@@ -1,0 +1,255 @@
+function expected_pos = train_poselet_loc(model, D, cached_scores)
+
+cls = model.cls;
+
+model.thresh = -inf;
+
+im_dir = [];
+BDglobals;
+
+poselet_dir = fullfile(ROOTDIR, 'data', 'annotations', cls);
+
+
+[Dpos pos_ind] = LMquery(D, 'object.name', cls, 'exact');
+cached_pos = cached_scores(pos_ind);
+
+clear D; % Just so I don't use it by accident
+
+part_ind = find(~[model.part.computed]);
+[model.part.computed] = deal(1);
+model.part(part_ind).computed = 0;
+
+c = 'rgbcmyk';
+
+% Get exemplar data ....
+[im part_bbox] = extract_exemplar_params(model.part(part_ind).name);
+D0 = pasc2D_id(im); % Get D structure
+
+bbox = LMobjectboundingbox(D0.annotation);
+[dk ok_bbox] = max(bbox_contained(part_bbox, bbox));
+
+kp = load_poselets(poselet_dir, D0.annotation.filename);
+
+% Match everything up
+poselet_boxes = cat(1, kp.bbox);
+[ov gt_to_kp] = max(bbox_overlap_mex(bbox(ok_bbox, :), poselet_boxes), [], 2);
+covered = find(ov>=0.75);% & scores{i}>score_thresh); 
+
+kp = kp(covered);
+
+kp_covered = kp.x>= part_bbox(1) & kp.x <= part_bbox(3) & kp.y >=part_bbox(2) & kp.y <= part_bbox(4);
+kp.x(~kp_covered) = [];
+kp.y(~kp_covered) = [];
+kp.label(~kp_covered) = [];
+
+model.part(part_ind).kp = kp;
+
+feat_out = {};
+min_dist = {};
+for i = 1:length(Dpos)
+   fprintf('%d\n', i);
+   boxes = LMobjectboundingbox(Dpos(i).annotation);
+   %im = imread(fullfile(im_dir, Dpos(i).annotation.filename));
+   
+   % Load poselet annotations
+   kp = load_poselets(poselet_dir, Dpos(i).annotation.filename);
+   
+   if(isempty(kp))
+       fprintf('Annotations missing! %s\n', Dpos(i).annotation.filename);
+   else
+      poselet_boxes = cat(1, kp.bbox);
+   
+      % Match everything up
+      [ov gt_to_kp] = max(bbox_overlap_mex(boxes, poselet_boxes), [], 2);
+      covered = find(ov>=0.75);% & scores{i}>score_thresh); 
+
+      I = imread(fullfile(im_dir, Dpos(i).annotation.filename));
+
+      for j_ind = 1:length(covered) % For each good ground truth object...
+         j = covered(j_ind);
+         kp_j = gt_to_kp(j);
+
+         [feat_out{end+1} min_dist{end+1}] = get_best_poselet_match(I, kp(kp_j), model.part(part_ind));
+
+         det_box = double(cached_pos{i}.part_boxes(reg_ind{i}(j), (part_ind-1)*4 + (1:4)));
+         flipped = cached_pos{i}.part_trans(reg_ind{i}(j), part_ind)==2;
+         
+         if(DRAW)
+            draw_bbox(det_box, c(mod(j-1,7)+1), 'linewidth', 5);
+            plot(kp(kp_j).x, kp(kp_j).y, ['x' c(mod(j-1,7)+1)], 'linewidth', 5);
+         end
+
+         kp_rect(j_ind) = normalize_keypoints(kp(kp_j), det_box, flipped);
+         kp_rect(j_ind).score = scores{i}(j);
+      end
+
+      if(DRAW)
+         pause;
+      end
+
+      all_kp0{i} = kp_rect;
+   end
+end
+
+all_kp = cat(2, all_kp0{:});
+
+all_scores = [all_kp.score];
+
+
+% Organize keypoints according to label
+
+possible_labels = unique(cat(1, all_kp.label));
+label_hash = make_hash(possible_labels);
+
+kp_x = inf(numel(possible_labels), numel(all_kp));
+kp_y = inf(numel(possible_labels), numel(all_kp));
+
+for i = 1:length(all_kp)
+   kp_ind = lookup_hash(all_kp(i).label, label_hash);
+
+   kp_x(kp_ind, i) = all_kp(i).x(:);
+   kp_y(kp_ind, i) = all_kp(i).y(:);
+end
+
+
+if(1 || DRAW)
+clf;
+hold on;
+% Now compute expected point for each
+
+% Now compute expected point for each
+for i = 1:length(possible_labels)
+    expected_pos(i, :) = [median(kp_x(i, ~isinf(kp_x(i,:)))), median(kp_y(i, ~isinf(kp_y(i,:))))];
+%    expected_pos(i, :) = [mean(kp_x(i, ~isinf(kp_x(i,:)))), mean(kp_y(i, ~isinf(kp_y(i,:))))];
+    variance(i, :) = [var(kp_x(i, ~isinf(kp_x(i,:)))), var(kp_y(i, ~isinf(kp_y(i,:))))];
+
+    covariance = [cov(kp_x(i, ~isinf(kp_x(i,:))),kp_y(i, ~isinf(kp_y(i,:))))];
+    %plot(kp_x(i,:), -kp_y(i,:), [c(mod(i-1,7)+1) 'o']);
+%    ellipse(sqrt(variance(i,1)), sqrt(variance(i,2)), 0, expected_pos(i, 1), -expected_pos(i, 2), c(mod(i-1,7)+1));
+    error_ellipse(covariance, [expected_pos(i, 1), -expected_pos(i, 2)], 'style', c(mod(i-1,7)+1));
+    plot(expected_pos(i,1), -expected_pos(i,2), [c(mod(i-1, 7)+1) 'x'], 'linewidth', 3);
+    text(expected_pos(i,1)+.01, -expected_pos(i,2), possible_labels{i});
+end
+
+keyboard
+return;
+for i = 1:length(possible_labels)
+    expected_pos(i, :) = [median(kp_x(i, ~isinf(kp_x(i,:)))), median(kp_y(i, ~isinf(kp_y(i,:))))];
+    
+    ex{i} = plot(kp_x(i,:), -kp_y(i,:), [c(mod(i-1,7)+1) 'o']);
+    plot(expected_pos(i,1), -expected_pos(i,2), [c(mod(i-1, 7)+1) 'x'], 'linewidth', 3);
+    text(expected_pos(i,1)+.01, -expected_pos(i,2), possible_labels{i});
+end
+end
+
+
+%keyboard
+% Now test it out
+
+
+% Compute cumulative average distances for each poselet
+[a b] = sort(all_scores, 'descend');
+all_scores_s = all_scores(b);
+kp_xs = kp_x(:, b);
+kp_ys = kp_y(:, b);
+
+for i = 1:length(possible_labels)
+   missing = isinf(kp_xs(i, :));
+   
+   dist_mat0 = squareform(pdist([kp_xs(i,:); kp_ys(i,:)]'));
+   dist_mat0(missing, :) = 0; 
+   dist_mat0(:, missing) = 0; 
+   
+   cum_dists = cumsum(cumsum(dist_mat0,1), 2);
+   %cum_missing = cumsum(missing).*[1:length(missing)];
+   d = ones(length(missing));
+   d(missing, :) = 0;
+   d(:, missing) = 0;
+   
+   cum_used = cumsum(cumsum(d,1), 2);
+   
+   avg_dist(:,i) = diag(cum_dists)./diag(cum_used);
+end
+
+
+
+
+function bbox = get_poselet_bbox(dat)
+
+   bdat = dat.annotation.visible_bounds.Attributes;
+
+   h = str2num(bdat.height);  
+   w = str2num(bdat.width);  
+   x = str2num(bdat.xmin);  
+   y = str2num(bdat.ymin);  
+
+   bbox = [x y x+w y+h];
+
+function kp_rect = normalize_keypoints(kp, bbox, flip)
+
+kp_rect = kp;
+
+cent = 1/2*(bbox([3 4]) + bbox([1 2]));
+scale = sqrt(sum((bbox([3 4]) - bbox([1 2])).^2));
+
+if(flip)
+   kp_rect.x = -(kp.x - cent(1))/scale;
+   
+   for i = 1:length(kp_rect.label)
+      if(strmatch('L ', kp_rect.label{i}))
+         kp_rect.label{i}(1:2) = 'R ';
+      elseif(strmatch('R ', kp_rect.label{i}))
+         kp_rect.label{i}(1:2) = 'L ';
+      end
+   end
+else
+   kp_rect.x = (kp.x - cent(1))/scale;
+end
+kp_rect.y = (kp.y - cent(2))/scale;
+kp_rect.score = 0;
+
+
+function kp = load_poselets(poselet_dir, im_name)
+
+
+   [dc bn] = fileparts(im_name);
+
+   ann_files = dir(fullfile(poselet_dir, [bn '_*.xml']));
+
+   if(isempty(ann_files))
+       kp = [];
+       return;
+   end
+   
+   for j = 1:length(ann_files)
+      dat = xml2struct(fullfile(poselet_dir, ann_files(j).name));
+      kp(j).bbox = get_poselet_bbox(dat);
+      [kp(j).x kp(j).y dc kp(j).label] = get_kp(dat);
+      kp(j).score = 0;
+   end
+
+function [x y label label_long] = get_kp(dat0)
+
+if(~isfield(dat0.annotation.keypoints, 'keypoint'))
+    dat = {};
+else
+    dat = dat0.annotation.keypoints.keypoint;
+end
+
+if(~iscell(dat))
+   dat = {dat};
+end
+
+x = zeros(length(dat), 1);
+y = zeros(length(dat), 1);
+label = cell(length(dat), 1);
+label_long = cell(length(dat), 1);
+
+for i = 1:length(dat)
+   str = dat{i}.Attributes;
+   x(i) = str2num(str.x);  
+   y(i) = str2num(str.y);  
+   lab0 = strrep(str.name, '_', ' ');
+   label{i} = lab0(regexp(lab0, '[A-Z]')); % Only use the capital letters (hopefully this is consistent
+   label_long{i} = lab0;
+end

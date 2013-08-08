@@ -1,0 +1,27 @@
+Copyright 2012-present Lubomir Bourdev, All Rights Reserved
+
+This directory includes code for detecting people and objects and extracting attributes using poselets.
+See more about the poselets project here:
+
+http://www.cs.berkeley.edu/~lbourdev/poselets
+
+LICENSE
+
+The code is released for research purposes only. See the attached license file.
+
+BUILD/RUN INSTRUCTIONS
+
+The project is available on UNIX (gcc) and Windows (MSVC). There is a Matlab MEX file provided as well.
+
+1. Download the Boost libraries from www.boost.com. You do not need to compile them for this project.
+2. If needed, install the JPEG and PNG libraries. The project comes with precompiled libs and headers but they may not work for your setup
+3. If needed, install OpenMP.
+3. Modify the build file to provide the location of your boost and (if needed, Matlab) path and to remove -fopenmp if not using OpenMP.
+4. Build with "make test". This will compile a poselets lib and the test project
+5. Run the test file by specifying the classifier XML and the image file. For example:
+  poselets_test/poselets_test data/categories/person.xml poselets_test/test_image.jpg
+This should load an image, run poselets and report the number of detected people. On Windows, you can enable drawing the test image and bounding boxes by changing poselets_test/main.cpp
+
+QUESTIONS?
+
+Please email lubomir.bourdev@gmail.com

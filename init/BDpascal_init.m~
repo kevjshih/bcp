@@ -1,0 +1,10 @@
+if(~exist('VOCdevkit'))
+   BDglobals;
+end
+
+if(~isdeployed)
+   addpath(VOCdevkit);
+   addpath(fullfile(VOCdevkit,  'VOCcode'));
+end
+
+BDVOCinit;

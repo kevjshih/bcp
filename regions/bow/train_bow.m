@@ -1,0 +1,73 @@
+%function train_bow_mc(features, labels)
+% Binary classifiers only
+
+if(1)
+load_init_data; % Doing on train only for now....
+
+C = 1;
+
+%number of samples for uniform sampling of the functions
+param.NSAMPLE = 100;
+param.BINARY = 0;
+
+[dk pos_inds] = LMquery(D, 'object.name', cls);
+neg = 1:length(D);
+neg(pos_inds) = [];
+
+
+r = randperm(length(pos_inds));
+pos_inds = pos_inds(r(1:min(700, ceil(end/2)))); % Not trying to be state of the art, so don't use too many images!
+
+
+neg_sub = neg;
+r = randperm(length(neg_sub));
+neg = neg(r(1:min(end,200)));
+Dsub = D([pos_inds(:); neg(:)]);
+cached_sub = cached_scores([pos_inds(:); neg(:)]);
+end
+
+
+for iter = 1:4
+   if(iter==1)
+      [feat labels] = collect_bow_cls(Dsub, cached_sub, cls);
+
+      iminds = {};
+      for j = 1:length(feat)
+         iminds{j} = repmat(j, size(feat{j},1), 1);
+      end
+      iminds = cat(1, iminds{:});
+      cur_lab = cat(1, labels{:});
+      features = cat(1, feat{:});
+   else
+      [feat_new labels_new] = collect_bow_cls(Dsub, cached_sub, cls, bowmodel{iter-1});
+      iminds_new = {};
+      for j = 1:length(feat_new)
+         iminds_new{j} = repmat(j, size(feat_new{j},1), 1);
+      end
+      labels_new = cat(1, labels_new{:});
+      feat_new = cat(1, feat_new{:});
+      iminds_new = cat(1, iminds_new{:});
+
+      [cur_lab features iminds] = update_cache_set(cur_lab, features, iminds, labels_new, feat_new, iminds_new, 0); % Don't update positive set, because there aren't any positives in this new data!
+   end 
+
+   bowmodel{iter} = svmtrain_workingset(cur_lab(:), features, sprintf('-h 0 -t 5 -c %f -w1 %f -w-1 %f', C, 1, 1), param); 
+end
+
+return;
+for i = length(model)+1:max(labels)
+    fprintf('\n\n\nTraining model %d\n', i);
+   cur_lab = 2*(labels==i)-1;
+
+%   w_pos = 1/(2*sum(cur_lab==1));
+%   w_neg = 1/(2*sum(cur_lab==-1));
+  
+   d{i} = svmpredict_approx(features, model{i}); % These will be used to train next layer
+   save('data/bow/full_model.mat', 'model', 'd');
+end
+
+keyboard
+mc_model = lintrain(labels, sparse(cat(2, d{:})), sprintf('-s 4 -c %f'));
+
+
+
