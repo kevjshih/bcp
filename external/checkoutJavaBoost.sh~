@@ -1,4 +1,0 @@
-git clone git://github.com/kevjshih/JavaBoost.git
-
-cd JavaBoost
-ant clean && ant
