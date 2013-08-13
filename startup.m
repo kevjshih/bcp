@@ -14,6 +14,7 @@ addpath(genpath(fullfile(basedir, 'external', 'minFunc')));
 addpath(genpath(fullfile(basedir, 'external', 'minConf')));
 addpath(genpath(fullfile(basedir, 'external', 'whog')));
 addpath(genpath(fullfile(basedir, 'external', 'proposals')));
+addpath(genpath(fullfile(basedir, 'external', 'textons')));
 addpath(fullfile(basedir, 'external'));
 addpath(fullfile(basedir, 'analysis'));
 
@@ -31,5 +32,7 @@ addpath(fullfile(basedir, 'class_confusion'));
 BDglobals;
 BDpascal_init;
 
+addpath(PASCALDIR);
+addpath(fullfile(PASCALDIR, 'VOCcode'));
 fprintf('Finished in %d seconds\n', ceil(toc(st)));
 

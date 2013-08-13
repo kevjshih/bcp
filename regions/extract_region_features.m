@@ -1,4 +1,4 @@
-function flag = extract_features(annotation, dirs)
+function flag = extract_region_features(annotation, dirs)
 flag = 1;
 if(~exist('dirs', 'var'))
    BDglobals;
@@ -9,8 +9,10 @@ if(~exist('dirs', 'var'))
       mkdir(region_feat_dir);
    end
 end
-
 dirs.precomputed_feat = fullfile(dirs.feat_dir, 'tc2');
+if(~exist(dirs.precomputed_feat))
+    mkdir(dirs.precomputed_feat);
+end
 region_feat_dir = fullfile(dirs.feat_dir, 'region');
 
 [dk bn dk] = fileparts(annotation.filename); 

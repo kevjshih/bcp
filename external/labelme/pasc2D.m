@@ -29,7 +29,6 @@ for i = 1:length(ids)
    D(i).annotation.filename = [ids{i} '.jpg'];
    D(i).annotation.folder = VOCopts.dataset;
    objs = [];   
-   
    try
       recs=PASreadrecord(sprintf(VOCopts.annopath,ids{i}));
    

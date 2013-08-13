@@ -33,8 +33,12 @@ else
    end
 
    D = pasc2D('train', VOCopts);
-   Dtest = pasc2D('val', VOCopts);
 
+
+
+   Dtest = pasc2D('val', VOCopts);
+   extract_all_region_features(D);
+   extract_all_region_features(Dtest);
    model = init_model(cls);
 
    D = update_D_categories(D, cls); % If cls isn't one of the basic level categories, replace it as needed

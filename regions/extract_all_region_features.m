@@ -1,4 +1,4 @@
-function extract_region_features(D)
+function extract_all_region_features(D)
 
 BDglobals;
 
@@ -8,8 +8,10 @@ mkdir(region_feat_dir);
 dirs.precomputed_feat = fullfile(dirs.feat_dir, 'tc2');
 
 parfor i = 1:length(D)
-   try
+    try
       fprintf('%d/%d\n', i, length(D));
       extract_region_features(D(i).annotation, dirs);
-   end
+    catch
+        disp('region failed to extract');
+    end
 end
