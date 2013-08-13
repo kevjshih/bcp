@@ -1,0 +1,10 @@
+SETUP INSTRUCTIONS
+
+1. Run setup.m from the base directory. This will recompile compile all necessary files.
+2. Edit init/BDglobals.m . 
+   Set VOCyear to the Pascal VOC year number (default 2010)
+   Set DATADIR to point to superdirectory holding Pascal dataset and precomputed object proposals
+3. Download Pascal dataset
+   File path should look like:
+   ${DATADIR}/VOC2010/VOCdevkit/[VOCcode, results, VOC2010]
+4. Download precomputed object proposals
