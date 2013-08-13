@@ -36,6 +36,7 @@ else
 
    D = pasc2D('trainval', VOCopts);
 %   Dtest = pasc2D('test', VOCopts);
+   extract_all_region_features(D);
 
    model = init_model(cls);
    cached_scores = init_cached_scores(model, D);

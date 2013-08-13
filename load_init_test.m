@@ -3,7 +3,7 @@ if(~exist('cls', 'var'))
 end
 
 basedir = fileparts(which('load_init_data.m'));
-javaaddpath(fullfile(basedir, 'external/JavaBoost/dist/JBoost.jar'));
+javaaddpath(fullfile(basedir, 'external/JavaBoost/Java/dist/JBoost.jar'));
 
 BDglobals;
 BDpascal_init;
@@ -30,7 +30,7 @@ else
    end
 
    Dtest = pasc2D('test', VOCopts);
-
+   extract_all_region_features(Dtest);
    cached_scores_test = init_cached_scores(model, Dtest);
    cached_scores_test = add_region_scores(model, Dtest, cached_scores_test);
 %   cached_scores = add_region_area(model, D, cached_scores);

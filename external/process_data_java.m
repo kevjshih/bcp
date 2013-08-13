@@ -52,7 +52,7 @@ for i = 1:numel(thresh_pnts),
         %              threshes, MONOTONIC(min(i,end)), weight(i),
         %              1));
 learners.add(javaboost.weaklearning ...
-                      .SingleFeatureMultiThresholdedToSigmoidLearner(columns(i)-1, threshes, MONOTONIC(min(i,end)), weight(i)));
+                      .SingleFeatureMultiThresholdedToSigmoidLearner(columns(i)-1, threshes, MONOTONIC(min(i,end)), weight(i),0));
    end
 
    if(strcmp(classifier, 'sigmoid_inf'))

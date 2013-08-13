@@ -2,12 +2,12 @@ function part_refinement_final(cls, trainval, IGNORE_SIMILAR)
 
 
 DO_TRAIN_BOOSTING_AND_EVALUATE = 1
-
-num_parts_used = 40; % number of parts to use per category
+% !!!! change this back to 40
+num_parts_used = 5; % number of parts to use per category
 
 
 startup;
-matlabpool;
+
 
 % Parse input
 try, trainval = str2num(trainval); end
@@ -79,7 +79,8 @@ candidate_file = fullfile('data/tmp/candidates/', [cls '_' set_str '_candidates.
 
 if(~exist(candidate_file, 'file'))
    candidate_suffix = 'whog';
-   train_candidate_parts(cls, 2000, candidate_suffix, trainval);
+   % !!!!!change this back to 2000
+   train_candidate_parts(cls, 20, candidate_suffix, trainval);
    test_all_candidates(10, 10, cls, candidate_suffix, trainval);
 
    candidate_suffix_full = [candidate_suffix '_' set_str];
@@ -191,6 +192,11 @@ for i = 1:num_parts_used
 end
 
 computed = get_parts_computed(model, cached_scores_test);
+
+if trainval
+    % load the test meta data
+    load_init_test
+end
 
 if(isempty(computed) || any(~computed))
    [model.part.computed] = deal(0);
