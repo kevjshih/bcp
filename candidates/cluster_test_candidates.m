@@ -5,8 +5,12 @@ function cluster_test_candidates(cls, num_blocks, block_id)
    if(matlabpool('size')==0)
       matlabpool local;
    end
-   load_init_data;
- 
+   BDglobals
+   if strcmp(TRAINSET, 'train')
+       load_init_data;
+   else
+       load_init_final;
+   end
 
 if(~exist('block_id', 'var')) 
    for i = 1:num_blocks

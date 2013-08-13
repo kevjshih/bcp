@@ -34,7 +34,13 @@ end
 
 function cached_scores = compute_obj_cached_scores(part_model, part_w_all)
 % this functionality is in a separate function so it doesn't overwrite values
+BDglobals;
 cls = part_model.cls;
-load_init_data;
+if strcmp(TRAINSET, 'train')
+    load_init_data;
+else   
+    load_init_final;
+end
+
 [labels cached_scores] = collect_boost_data_loo(part_model, D, cached_scores, part_w_all);
 end

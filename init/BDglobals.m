@@ -1,9 +1,8 @@
 VOCyear = '2010';
 
 % dataset superdirectory
+% should hold pascal dataset and object proposals
 DATADIR = '/home/kevin/data/';
-
-
 
 
 VOCYEAR = ['VOC' VOCyear]; % I think this is used by exemplar SVM
@@ -37,6 +36,8 @@ dirs.label_dir = label_dir;
 dirs.im_dir = im_dir;
 dirs.feat_dir = feat_dir;
 
+
+% set this to either train or trainval
 TRAINSET = 'train';
 
 if(0) % Uncomment this if you change any directories

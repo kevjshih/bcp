@@ -2,7 +2,7 @@ function [model, num_examples] = auto_refine_part(VOCopts, part, use_cached)
 if ~exist('use_cached', 'var')
    use_cached = true;
 end
-
+BDglobals;
 basedir = fullfile(VOCopts.localdir, 'auto_refined_models');
 if ~exist(basedir, 'dir')
    mkdir(basedir);
@@ -16,7 +16,11 @@ if ~fileexists(cached_filename) || ~use_cached
    cls = part.cls;
    set = part.set;
 
-   load_init_data;
+   if strcmp(TRAINSET, 'train')
+       load_init_data;
+   else
+       load_init_final;
+   end
 
    %% Set up model flags
    model.hard_local = 0;

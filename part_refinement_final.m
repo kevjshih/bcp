@@ -1,4 +1,4 @@
-function part_refinement_final(cls, trainval, IGNORE_SIMILAR)
+function part_refinement_final(cls)
 
 
 DO_TRAIN_BOOSTING_AND_EVALUATE = 1
@@ -35,9 +35,10 @@ if(~exist('IGNORE_SIMILAR', 'var'))
    IGNORE_SIMILAR = 0;
 end
 
-if(~exist('trainval', 'var'))
-   trainval = 0;
-end
+
+% TRAINSET variable set in BDglobals
+trainval = strcmp(TRAINSET, 'trainval');
+fprintf('Training on %s split\n', TRAINSET);
 
 if(trainval)
    set_str = 'trainval';
@@ -80,7 +81,7 @@ candidate_file = fullfile('data/tmp/candidates/', [cls '_' set_str '_candidates.
 if(~exist(candidate_file, 'file'))
    candidate_suffix = 'whog';
    % !!!!!change this back to 2000
-   train_candidate_parts(cls, 20, candidate_suffix, trainval);
+   train_candidate_parts(cls, 2, candidate_suffix, trainval);
    test_all_candidates(10, 10, cls, candidate_suffix, trainval);
 
    candidate_suffix_full = [candidate_suffix '_' set_str];
