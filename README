@@ -1,10 +1,31 @@
+REQUIREMENTS
+Matlab 
+apache ant
+git
+C compiler for compiling mex files
+At least 12G of RAM
+
 SETUP INSTRUCTIONS
 
 1. Run setup.m from the base directory. This will recompile compile all necessary files.
 2. Edit init/BDglobals.m . 
    Set VOCyear to the Pascal VOC year number (default 2010)
    Set DATADIR to point to superdirectory holding Pascal dataset and precomputed object proposals
-3. Download Pascal dataset
-   File path should look like:
+3. Download the Pascal dataset
+   The file path should look like:
    ${DATADIR}/VOC2010/VOCdevkit/[VOCcode, results, VOC2010]
-4. Download precomputed object proposals
+4. Download precomputed object proposals (vision.cs.uiuc.edu/proposals)
+   Extract into DATADIR. The file path should look like:
+   ${DATADIR}/proposals/VOC2010/
+
+EXECUTION
+
+Execute the MATLAB environment in the base directory. This will automatically run startup.m to setup the required paths. Make sure no errors/warnings show up.
+
+> matlabpool;
+> cls = 'aeroplane';
+> part_refinement_final(cls)
+
+The java.opts file controls the amount of memory allocated to JVM. Make sure at least 4-5G of RAM is allocated if DO_TRAIN_BOOSTING_AND_EVALUATE = 1. However, because memory allocated this way will be unavailable to regular MATLAB operations, it is recommended to disable this flag and reduce memory allocated to JVM first while training the part-detectors (everything else in part_refinement_final.m).
+
+
