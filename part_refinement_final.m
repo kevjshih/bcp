@@ -10,7 +10,6 @@ startup;
 
 
 % Parse input
-try, trainval = str2num(trainval); end
 try, IGNORE_SIMILAR = str2num(IGNORE_SIMILAR); end
 try, if(~isinf(str2num(cls))), cls=str2num(cls); end, end
 
@@ -170,12 +169,12 @@ for i = 1:num_parts_used
     model.part(iter).spat_const = [0 1 0.8 1 0 1];
     chosen_names{iter} = best_model.name;
 
-    %try
+    try
     % part model refinement done here
     [model w_all] = train_consistency(model, D, cached_gt);
-    %catch
-    % w_all = []; % Model failed to train!
-    %end
+    catch
+     w_all = []; % Model failed to train!
+    end
     % Compute Part Scores to be used with the boosting
     [labels cached_gt_pos] = collect_boost_data_loo(model, Dpos, cached_gt_pos, w_all); 
     [labels cached_scores] = collect_boost_data_loo(model, D, cached_scores, w_all); 

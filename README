@@ -1,4 +1,5 @@
 REQUIREMENTS
+
 Matlab 
 apache ant
 git
@@ -11,6 +12,7 @@ SETUP INSTRUCTIONS
 2. Edit init/BDglobals.m . 
    Set VOCyear to the Pascal VOC year number (default 2010)
    Set DATADIR to point to superdirectory holding Pascal dataset and precomputed object proposals
+   Set TRAINSET to either 'train' or 'trainval'
 3. Download the Pascal dataset
    The file path should look like:
    ${DATADIR}/VOC2010/VOCdevkit/[VOCcode, results, VOC2010]
@@ -28,4 +30,30 @@ Execute the MATLAB environment in the base directory. This will automatically ru
 
 The java.opts file controls the amount of memory allocated to JVM. Make sure at least 4-5G of RAM is allocated if DO_TRAIN_BOOSTING_AND_EVALUATE = 1. However, because memory allocated this way will be unavailable to regular MATLAB operations, it is recommended to disable this flag and reduce memory allocated to JVM first while training the part-detectors (everything else in part_refinement_final.m).
 
+
+KEY FUNCTIONS
+
+load_init_data/load_init_final:
+	Loads relevant region information into cached_scores/cached_scores_test cell arrays, as well as initializes an empty model struct. load_init_data for train/val split.
+
+train_consistency:
+	Automatic part-detector-refinement procedure
+
+collect_boost_data/collect_boost_data_loo:
+	Collects trained part-detector responses to be fed into the boosted classifier 
+
+boost_iterate:
+	Train boosted classifier on data
+
+
+DATA STRUCTURES
+
+Image data is stored using a combination of LabelMe D-structs (D and Dtest) for metadata and cached_scores/cached_scores_test cell arrays to keep track of feature values and labels for each region in each image.
+
+
+
+
+This code is provided for academic use only. Use at your own risk. 
+
+If you have any questions about the code, feel free to contact Kevin Shih at kjshih2@illinois.edu. 
 
